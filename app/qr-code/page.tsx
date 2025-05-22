@@ -2,7 +2,7 @@ import QRCodeGenerator from "@/components/qr/qr-code";
 
 export default function QRCodePage() {
     // Replace this with your actual website URL
-    const websiteUrl = "https://your-website-url.com";
+    const websiteUrl = "http://ew8g88k4w8c0sc0os448k0c8.138.201.120.43.sslip.io";
     
     return (
         <div className="container mx-auto py-12">
