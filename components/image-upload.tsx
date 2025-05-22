@@ -192,14 +192,16 @@ export default function ImageUpload({ name, onSuccess }: ImageUploadProps) {
           
           <div className="grid grid-cols-3 gap-2">
             {previews.map((preview, index) => (
-              <div key={index} className="relative group">
-                <div className="relative h-24 w-full rounded overflow-hidden">
-                  <Image
-                    src={preview}
-                    alt={`Preview ${index + 1}`}
-                    fill
-                    className="object-cover"
-                  />
+              <div key={index} className="relative">
+                <div className="bg-gray-50 rounded overflow-hidden" style={{ paddingBottom: '100%', position: 'relative' }}>
+                  <div className="absolute inset-0 flex items-center justify-center">
+                    <Image
+                      src={preview}
+                      alt={`Preview ${index + 1}`}
+                      fill
+                      className="object-contain"
+                    />
+                  </div>
                 </div>
                 <button
                   type="button"

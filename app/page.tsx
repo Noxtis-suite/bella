@@ -23,7 +23,7 @@ export default function Home() {
   // State for viewing a photo in the modal
   const [viewingPhoto, setViewingPhoto] = useState<PhotoSubmission | null>(null);
   const [isViewModalOpen, setIsViewModalOpen] = useState(false);
-
+  
   // Fetch photos with submitter information
   const fetchPhotos = async () => {
     setIsLoading(true);
@@ -167,13 +167,13 @@ export default function Home() {
               className="flex flex-col rounded-lg overflow-hidden shadow-md bg-white cursor-pointer transition-transform hover:scale-[1.02]"
               onClick={() => handleViewPhoto(submission)}
             >
-              <div className="relative aspect-square">
+              <div className="relative w-full pb-[100%]">
                 <Image
                   src={`${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/event-photos/${submission.filename}`}
                   alt={`Photo by ${submission.name}`}
                   fill
                   sizes="(max-width: 640px) 50vw, (max-width: 1200px) 50vw"
-                  className="object-cover"
+                  className="object-contain bg-gray-50"
                 />
               </div>
               <div className="p-2 md:p-3">
@@ -211,14 +211,18 @@ export default function Home() {
           title={`Billede delt af ${viewingPhoto.name}`}
         >
           <div className="py-2">
-            <div className="relative aspect-auto min-h-[200px] max-h-[70vh] w-full">
-              <Image
-                src={`${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/event-photos/${viewingPhoto.filename}`}
-                alt={`Photo by ${viewingPhoto.name}`}
-                fill
-                sizes="(max-width: 1200px) 90vw"
-                className="object-contain"
-              />
+            <div className="flex items-center justify-center bg-gray-50 rounded-lg overflow-hidden" style={{ height: 'calc(min(70vh, 500px))' }}>
+              <div className="relative w-full h-full max-w-full max-h-full">
+                <Image
+                  src={`${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/event-photos/${viewingPhoto.filename}`}
+                  alt={`Photo by ${viewingPhoto.name}`}
+                  fill
+                  priority
+                  sizes="(max-width: 1200px) 90vw"
+                  className="object-contain"
+                  style={{ objectPosition: 'center center' }}
+                />
+              </div>
             </div>
             
             <div className="mt-4 text-center">
