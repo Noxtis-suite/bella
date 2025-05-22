@@ -135,69 +135,70 @@ export default function ImageUpload({ name, onSuccess }: ImageUploadProps) {
     }
   };
 
-  const handleDragOver = (e: React.DragEvent) => {
-    e.preventDefault();
-  };
-
-  const handleDrop = (e: React.DragEvent) => {
-    e.preventDefault();
-    setError(null);
-    
-    const files = e.dataTransfer.files;
-    if (!files || files.length === 0) return;
-    
-    const newFiles: File[] = [];
-    const newPreviews: string[] = [];
-    
-    // Process each file
-    Array.from(files).forEach(file => {
-      // Check file type
-      if (!file.type.startsWith('image/')) {
-        setError("Vælg venligst kun billedfiler");
-        return;
-      }
-      
-      // Check file size (max 5MB)
-      if (file.size > 5 * 1024 * 1024) {
-        setError(`Billedet '${file.name}' er større end 5MB`);
-        return;
-      }
-      
-      newFiles.push(file);
-      
-      // Create preview for this file
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        newPreviews.push(reader.result as string);
-        // Update previews when all have been processed
-        if (newPreviews.length === newFiles.length) {
-          setPreviews(prev => [...prev, ...newPreviews]);
-        }
-      };
-      reader.readAsDataURL(file);
-    });
-    
-    setSelectedFiles(prev => [...prev, ...newFiles]);
-  };
-
   return (
     <div className="w-full">
-      {/* File selection area */}
-      <div 
-        className={`border-2 border-dashed rounded-lg p-4 text-center ${error ? 'border-red-400' : 'border-gray-300'}`}
-        onDragOver={handleDragOver}
-        onDrop={handleDrop}
-      >
-        {previews.length > 0 ? (
-          <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+      {/* Simple mobile-friendly file selection */}
+      <div className="mb-4">
+        {previews.length === 0 ? (
+          <button
+            type="button"
+            onClick={() => fileInputRef.current?.click()}
+            className="w-full py-4 px-2 border-2 border-dashed border-gray-300 rounded-lg text-center hover:bg-gray-50 focus:outline-none"
+          >
+            <div className="flex flex-col items-center">
+              <svg 
+                className="h-10 w-10 text-gray-400 mb-2" 
+                stroke="currentColor" 
+                fill="none" 
+                viewBox="0 0 24 24"
+              >
+                <path 
+                  strokeLinecap="round" 
+                  strokeLinejoin="round" 
+                  strokeWidth="2" 
+                  d="M12 4v16m8-8H4" 
+                />
+              </svg>
+              <span className="text-sm font-medium text-blue-500">Vælg billeder</span>
+              <span className="text-xs text-gray-500 mt-1">PNG, JPG, GIF op til 5MB</span>
+            </div>
+          </button>
+        ) : (
+          <button
+            type="button"
+            onClick={() => fileInputRef.current?.click()}
+            className="w-full py-2 px-3 border border-gray-300 rounded-lg text-center hover:bg-gray-50 focus:outline-none mb-3"
+          >
+            <span className="text-sm font-medium text-blue-500">Tilføj flere billeder</span>
+          </button>
+        )}
+        
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept="image/*"
+          onChange={handleFileChange}
+          multiple
+          className="hidden"
+        />
+      </div>
+      
+      {/* Selected images previews */}
+      {previews.length > 0 && (
+        <div className="mb-4">
+          <p className="text-sm text-gray-600 mb-2">
+            {selectedFiles.length} {selectedFiles.length === 1 ? 'billede' : 'billeder'} valgt
+          </p>
+          
+          <div className="grid grid-cols-3 gap-2">
             {previews.map((preview, index) => (
               <div key={index} className="relative group">
-                <div className="relative h-24 w-full">
+                <div className="relative h-24 w-full rounded overflow-hidden">
                   <Image
                     src={preview}
                     alt={`Preview ${index + 1}`}
                     fill
-                    className="object-cover rounded"
+                    className="object-cover"
                   />
                 </div>
                 <button
@@ -209,69 +210,18 @@ export default function ImageUpload({ name, onSuccess }: ImageUploadProps) {
                 </button>
               </div>
             ))}
-            <div 
-              className="border-2 border-dashed border-gray-300 rounded flex items-center justify-center h-24 cursor-pointer hover:bg-gray-50"
-              onClick={() => fileInputRef.current?.click()}
-            >
-              <span className="text-2xl text-gray-400">+</span>
-            </div>
           </div>
-        ) : (
-          <div className="py-8">
-            <svg 
-              className="mx-auto h-12 w-12 text-gray-400" 
-              stroke="currentColor" 
-              fill="none" 
-              viewBox="0 0 48 48" 
-              aria-hidden="true"
-            >
-              <path 
-                d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02" 
-                strokeWidth="2" 
-                strokeLinecap="round" 
-                strokeLinejoin="round" 
-              />
-            </svg>
-            <p className="mt-2 text-sm text-gray-500">
-              Træk og slip billeder her, eller{' '}
-              <button 
-                type="button" 
-                className="text-blue-500 hover:text-blue-600"
-                onClick={() => fileInputRef.current?.click()}
-              >
-                klik for at vælge
-              </button>
-            </p>
-            <p className="mt-1 text-xs text-gray-400">
-              PNG, JPG, GIF op til 5MB
-            </p>
-          </div>
-        )}
-        <input
-          ref={fileInputRef}
-          type="file"
-          accept="image/*"
-          onChange={handleFileChange}
-          multiple
-          className="hidden"
-        />
-      </div>
-      
-      {/* Selected files count */}
-      {selectedFiles.length > 0 && (
-        <p className="mt-2 text-sm text-gray-600">
-          {selectedFiles.length} {selectedFiles.length === 1 ? 'billede' : 'billeder'} valgt
-        </p>
+        </div>
       )}
       
       {/* Error message */}
       {error && (
-        <p className="mt-2 text-sm text-red-500">{error}</p>
+        <p className="mt-2 text-sm text-red-500 mb-3">{error}</p>
       )}
       
       {/* Upload progress */}
       {isUploading && uploadProgress > 0 && (
-        <div className="mt-2">
+        <div className="mb-3">
           <div className="bg-gray-200 rounded-full h-2.5">
             <div 
               className="bg-blue-600 h-2.5 rounded-full" 
@@ -283,20 +233,20 @@ export default function ImageUpload({ name, onSuccess }: ImageUploadProps) {
       )}
       
       {/* Upload button */}
-      <div className="mt-4">
+      {selectedFiles.length > 0 && (
         <button
           type="button"
           onClick={handleUpload}
-          disabled={selectedFiles.length === 0 || isUploading}
-          className={`w-full py-2 px-4 rounded-lg ${
-            selectedFiles.length === 0 || isUploading
+          disabled={isUploading}
+          className={`w-full py-3 px-4 rounded-lg ${
+            isUploading
               ? 'bg-gray-300 cursor-not-allowed'
               : 'bg-blue-500 hover:bg-blue-600 text-white'
           }`}
         >
-          {isUploading ? 'Uploader...' : `Upload ${selectedFiles.length > 0 ? selectedFiles.length : ''} ${selectedFiles.length === 1 ? 'billede' : 'billeder'}`}
+          {isUploading ? 'Uploader...' : `Upload ${selectedFiles.length} ${selectedFiles.length === 1 ? 'billede' : 'billeder'}`}
         </button>
-      </div>
+      )}
     </div>
   );
 } 
