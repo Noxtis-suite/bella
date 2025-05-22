@@ -12,6 +12,7 @@ export const metadata = {
   metadataBase: new URL(defaultUrl),
   title: "Bella Konfirmation 2025",
   description: "Information about Bella's Konfirmation 2025",
+  viewport: "width=device-width, initial-scale=1, maximum-scale=1",
 };
 
 const geistSans = Geist({
@@ -34,13 +35,13 @@ export default function RootLayout({
           disableTransitionOnChange
         >
           <main className="min-h-screen flex flex-col items-center">
-            <div className="flex-1 w-full flex flex-col gap-20 items-center">
+            <div className="flex-1 w-full flex flex-col gap-10 md:gap-20 items-center">
               <Header />
-              <div className="flex flex-col gap-20 max-w-5xl p-5">
+              <div className="flex flex-col gap-10 md:gap-20 w-full px-2 sm:px-4 max-w-5xl">
                 {children}
               </div>
 
-              <footer className="w-full flex items-center justify-center border-t mx-auto text-center text-xs gap-8 py-8">
+              <footer className="w-full flex items-center justify-center border-t mx-auto text-center text-xs gap-4 md:gap-8 py-6 md:py-8 mt-8">
                 <p>
                   Bella Konfirmation 2025
                 </p>

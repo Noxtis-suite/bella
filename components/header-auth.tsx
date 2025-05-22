@@ -3,21 +3,21 @@ import { Button } from "./ui/button";
 
 export default function Header() {
   return (
-    <div className="relative w-full py-4">
+    <div className="relative w-full py-4 px-4">
       {/* Background banner text */}
-      <div className="absolute inset-0 flex items-center justify-center text-4xl font-bold text-gray-100 opacity-20 select-none">
-        bella konfirmation 2025!
+      <div className="absolute inset-0 flex items-center justify-center text-3xl md:text-4xl font-bold text-gray-100 opacity-20 select-none overflow-hidden">
+        <span className="whitespace-nowrap">bella konfirmation 2025!</span>
       </div>
       
       <div className="container mx-auto flex justify-between items-center relative z-10">
-        <div className="text-xl font-semibold">
+        <div className="text-lg md:text-xl font-semibold">
           <Link href="/">Bella Konfirmation</Link>
         </div>
         
-        <Button asChild variant="outline" size="sm">
+        <Button asChild variant="outline" size="sm" className="text-xs md:text-sm">
           <Link href="/qr-code">
-            <span className="flex items-center gap-2">
-              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <span className="flex items-center gap-1 md:gap-2">
+              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="hidden xs:inline">
                 <rect width="5" height="5" x="3" y="3" rx="1" />
                 <rect width="5" height="5" x="16" y="3" rx="1" />
                 <rect width="5" height="5" x="3" y="16" rx="1" />
