@@ -17,12 +17,7 @@ export default async function AuthButton() {
       <>
         <div className="flex gap-4 items-center">
           <div>
-            <Badge
-              variant={"default"}
-              className="font-normal pointer-events-none"
-            >
-              Please update .env.local file with anon key and url
-            </Badge>
+          <Link href="/qr-code">QR Code</Link>
           </div>
           <div className="flex gap-2">
             <Button
@@ -58,13 +53,18 @@ export default async function AuthButton() {
       </form>
     </div>
   ) : (
+    <>
+    <div>
+    <Link href="/qrcode">QR Code</Link>
+    </div>
     <div className="flex gap-2">
       <Button asChild size="sm" variant={"outline"}>
         <Link href="/sign-in">Sign in</Link>
       </Button>
       <Button asChild size="sm" variant={"default"}>
-        <Link href="/sign-up">Sign up</Link>
-      </Button>
-    </div>
+          <Link href="/sign-up">Sign up</Link>
+        </Button>
+      </div>
+    </>
   );
 }
