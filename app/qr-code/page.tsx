@@ -7,17 +7,20 @@ export default function QRCodePage() {
     return (
         <div className="container mx-auto px-4 py-6 md:py-12">
             <h1 className="text-2xl sm:text-3xl font-bold mb-6 sm:mb-8 text-center">
-                Event QR Code
+                Begivenheds QR Kode
             </h1>
+            <p className="text-sm md:text-base text-gray-600">
+                    Scan denne QR kode med din telefons kamera for at besøge vores hjemmeside
+                </p>
             <div className="flex justify-center">
                 <QRCodeGenerator 
                     url={websiteUrl} 
-                    title="Scan to visit our website!" 
+                    title="Scan for at besøge vores hjemmeside!" 
                 />
             </div>
             <div className="mt-8 text-center">
                 <p className="text-sm md:text-base text-gray-600">
-                    Scan this QR code with your phone's camera to visit our website
+                    Scan denne QR kode med din telefons kamera for at besøge vores hjemmeside
                 </p>
             </div>
         </div>

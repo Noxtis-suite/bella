@@ -4,12 +4,7 @@ import { Button } from "./ui/button";
 export default function Header() {
   return (
     <div className="relative w-full py-4 px-4">
-      {/* Background banner text */}
-      <div className="absolute inset-0 flex items-center justify-center text-3xl md:text-4xl font-bold text-gray-100 opacity-20 select-none overflow-hidden">
-        <span className="whitespace-nowrap">bella konfirmation 2025!</span>
-      </div>
-      
-      <div className="container mx-auto flex justify-between items-center relative z-10">
+      <div className="container mx-auto flex justify-between items-center">
         <div className="text-lg md:text-xl font-semibold">
           <Link href="/">Bella Konfirmation</Link>
         </div>
