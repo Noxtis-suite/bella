@@ -5,14 +5,14 @@ import { createClient } from "@/utils/supabase/client";
 import Image from "next/image";
 import { v4 as uuidv4 } from "uuid";
 
-interface ImageUploadProps {
+interface MediaUploadProps {
   name: string;
   onSuccess?: () => void;
 }
 
-export default function ImageUpload({ name, onSuccess }: ImageUploadProps) {
+export default function MediaUpload({ name, onSuccess }: MediaUploadProps) {
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
-  const [previews, setPreviews] = useState<string[]>([]);
+  const [previews, setPreviews] = useState<{ url: string; type: 'image' | 'video' }[]>([]);
   const [isUploading, setIsUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
   const [error, setError] = useState<string | null>(null);
@@ -25,19 +25,25 @@ export default function ImageUpload({ name, onSuccess }: ImageUploadProps) {
     if (!files || files.length === 0) return;
     
     const newFiles: File[] = [];
-    const newPreviews: string[] = [];
+    const newPreviews: { url: string; type: 'image' | 'video' }[] = [];
     
     // Process each file
     Array.from(files).forEach(file => {
-      // Check file type
-      if (!file.type.startsWith('image/')) {
-        setError("Vælg venligst kun billedfiler");
+      // Check file type - accept both images and videos
+      const isImage = file.type.startsWith('image/');
+      const isVideo = file.type.startsWith('video/');
+      
+      if (!isImage && !isVideo) {
+        setError("Vælg venligst kun billede- eller videofiler");
         return;
       }
       
-      // Check file size (max 5MB)
-      if (file.size > 5 * 1024 * 1024) {
-        setError(`Billedet '${file.name}' er større end 5MB`);
+      // Check file size (max 50MB for videos, 5MB for images)
+      const maxSize = isVideo ? 50 * 1024 * 1024 : 5 * 1024 * 1024;
+      const sizeText = isVideo ? "50MB" : "5MB";
+      
+      if (file.size > maxSize) {
+        setError(`Filen '${file.name}' er større end ${sizeText}`);
         return;
       }
       
@@ -46,7 +52,10 @@ export default function ImageUpload({ name, onSuccess }: ImageUploadProps) {
       // Create preview for this file
       const reader = new FileReader();
       reader.onloadend = () => {
-        newPreviews.push(reader.result as string);
+        newPreviews.push({
+          url: reader.result as string,
+          type: isVideo ? 'video' : 'image'
+        });
         // Update previews when all have been processed
         if (newPreviews.length === newFiles.length) {
           setPreviews(prev => [...prev, ...newPreviews]);
@@ -68,62 +77,52 @@ export default function ImageUpload({ name, onSuccess }: ImageUploadProps) {
     
     setIsUploading(true);
     setError(null);
-    setUploadProgress(0);
     
     try {
       const supabase = createClient();
-      let successCount = 0;
       
-      // Upload each file
       for (let i = 0; i < selectedFiles.length; i++) {
         const file = selectedFiles[i];
+        const fileExtension = file.name.split('.').pop();
+        const fileName = `${uuidv4()}.${fileExtension}`;
         
-        // Generate a unique filename
-        const fileExt = file.name.split('.').pop();
-        const fileName = `${uuidv4()}.${fileExt}`;
-        
-        // Upload to Supabase storage
+        // Upload file to Supabase storage
         const { error: uploadError } = await supabase.storage
           .from('event-photos')
           .upload(fileName, file);
-          
+        
         if (uploadError) {
-          console.error(`Error uploading file ${file.name}:`, uploadError);
-          continue; // Try to upload the next file
+          throw new Error(`Upload fejl: ${uploadError.message}`);
         }
         
-        // Add entry to database with name and timestamp
+        // Determine file type
+        const fileType = file.type.startsWith('video/') ? 'video' : 'image';
+        
+        // Save submission to database
         const { error: dbError } = await supabase
           .from('photo_submissions')
-          .insert([
-            { 
-              name: name,
-              filename: fileName,
-              submitted_at: new Date().toISOString()
-            }
-          ]);
-          
+          .insert({
+            name: name,
+            filename: fileName,
+            file_type: fileType
+          });
+        
         if (dbError) {
-          console.error(`Error adding database entry for ${fileName}:`, dbError);
-          continue; // Try the next file
+          throw new Error(`Database fejl: ${dbError.message}`);
         }
         
-        successCount++;
-        
         // Update progress
-        setUploadProgress(Math.round(((i + 1) / selectedFiles.length) * 100));
+        const progress = Math.round(((i + 1) / selectedFiles.length) * 100);
+        setUploadProgress(progress);
       }
       
-      // Reset form if at least one upload was successful
-      if (successCount > 0) {
-        setSelectedFiles([]);
-        setPreviews([]);
-        if (fileInputRef.current) fileInputRef.current.value = '';
-        
-        // Call success callback
-        if (onSuccess) onSuccess();
-      } else {
-        setError("Ingen billeder blev uploadet. Prøv igen.");
+      // Reset form
+      setSelectedFiles([]);
+      setPreviews([]);
+      
+      // Call success callback
+      if (onSuccess) {
+        onSuccess();
       }
       
     } catch (err: any) {
@@ -159,8 +158,8 @@ export default function ImageUpload({ name, onSuccess }: ImageUploadProps) {
                   d="M12 4v16m8-8H4" 
                 />
               </svg>
-              <span className="text-sm font-medium text-blue-500">Vælg billeder</span>
-              <span className="text-xs text-gray-500 mt-1">PNG, JPG, GIF op til 5MB</span>
+              <span className="text-sm font-medium text-blue-500">Vælg billeder eller videoer</span>
+              <span className="text-xs text-gray-500 mt-1">Billeder: PNG, JPG, GIF op til 5MB<br/>Videoer: MP4, MOV, AVI op til 50MB</span>
             </div>
           </button>
         ) : (
@@ -169,25 +168,25 @@ export default function ImageUpload({ name, onSuccess }: ImageUploadProps) {
             onClick={() => fileInputRef.current?.click()}
             className="w-full py-2 px-3 border border-gray-300 rounded-lg text-center hover:bg-gray-50 focus:outline-none mb-3"
           >
-            <span className="text-sm font-medium text-blue-500">Tilføj flere billeder</span>
+            <span className="text-sm font-medium text-blue-500">Tilføj flere filer</span>
           </button>
         )}
         
         <input
           ref={fileInputRef}
           type="file"
-          accept="image/*"
+          accept="image/*,video/*"
           onChange={handleFileChange}
           multiple
           className="hidden"
         />
       </div>
       
-      {/* Selected images previews */}
+      
       {previews.length > 0 && (
         <div className="mb-4">
           <p className="text-sm text-gray-600 mb-2">
-            {selectedFiles.length} {selectedFiles.length === 1 ? 'billede' : 'billeder'} valgt
+            {selectedFiles.length} {selectedFiles.length === 1 ? 'fil' : 'filer'} valgt
           </p>
           
           <div className="grid grid-cols-3 gap-2">
@@ -195,13 +194,30 @@ export default function ImageUpload({ name, onSuccess }: ImageUploadProps) {
               <div key={index} className="relative">
                 <div className="bg-gray-50 rounded overflow-hidden" style={{ paddingBottom: '100%', position: 'relative' }}>
                   <div className="absolute inset-0 flex items-center justify-center">
-                    <Image
-                      src={preview}
-                      alt={`Preview ${index + 1}`}
-                      fill
-                      className="object-contain"
-                    />
+                    {preview.type === 'video' ? (
+                      <video
+                        src={preview.url}
+                        className="w-full h-full object-contain"
+                        muted
+                      />
+                    ) : (
+                      <Image
+                        src={preview.url}
+                        alt={`Preview ${index + 1}`}
+                        fill
+                        className="object-contain"
+                      />
+                    )}
                   </div>
+                  {preview.type === 'video' && (
+                    <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
+                      <div className="bg-black bg-opacity-50 rounded-full p-2">
+                        <svg className="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 20 20">
+                          <path d="M8 5v10l8-5-8-5z"/>
+                        </svg>
+                      </div>
+                    </div>
+                  )}
                 </div>
                 <button
                   type="button"
@@ -246,7 +262,7 @@ export default function ImageUpload({ name, onSuccess }: ImageUploadProps) {
               : 'bg-blue-500 hover:bg-blue-600 text-white'
           }`}
         >
-          {isUploading ? 'Uploader...' : `Upload ${selectedFiles.length} ${selectedFiles.length === 1 ? 'billede' : 'billeder'}`}
+          {isUploading ? 'Uploader...' : `Upload ${selectedFiles.length} ${selectedFiles.length === 1 ? 'fil' : 'filer'}`}
         </button>
       )}
     </div>

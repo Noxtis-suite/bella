@@ -5,27 +5,28 @@ import { useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import Modal from "@/components/ui/modal";
-import ImageUpload from "@/components/image-upload";
+import MediaUpload from "@/components/image-upload";
 
-interface PhotoSubmission {
+interface MediaSubmission {
   id: string;
   name: string;
   filename: string;
   submitted_at: string;
+  file_type?: string; // 'image' or 'video'
 }
 
 export default function Home() {
-  const [photoSubmissions, setPhotoSubmissions] = useState<PhotoSubmission[]>([]);
+  const [mediaSubmissions, setMediaSubmissions] = useState<MediaSubmission[]>([]);
   const [name, setName] = useState("");
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   
-  // State for viewing a photo in the modal
-  const [viewingPhoto, setViewingPhoto] = useState<PhotoSubmission | null>(null);
+  // State for viewing media in the modal
+  const [viewingMedia, setViewingMedia] = useState<MediaSubmission | null>(null);
   const [isViewModalOpen, setIsViewModalOpen] = useState(false);
   
-  // Fetch photos with submitter information
-  const fetchPhotos = async () => {
+  // Fetch media with submitter information
+  const fetchMedia = async () => {
     setIsLoading(true);
     
     try {
@@ -42,7 +43,7 @@ export default function Home() {
         return;
       }
       
-      setPhotoSubmissions(submissions || []);
+      setMediaSubmissions(submissions || []);
     } catch (error) {
       console.error("Error:", error);
     } finally {
@@ -51,7 +52,7 @@ export default function Home() {
   };
   
   useEffect(() => {
-    fetchPhotos();
+    fetchMedia();
   }, []);
 
   const handleOpenModal = () => {
@@ -65,197 +66,188 @@ export default function Home() {
 
   const handleUploadSuccess = () => {
     setIsModalOpen(false);
-    fetchPhotos(); // Refresh the image gallery
+    fetchMedia(); // Refresh the media gallery
   };
   
-  const handleViewPhoto = (submission: PhotoSubmission) => {
-    setViewingPhoto(submission);
+  const handleViewMedia = (submission: MediaSubmission) => {
+    setViewingMedia(submission);
     setIsViewModalOpen(true);
   };
   
   const handleCloseViewModal = () => {
     setIsViewModalOpen(false);
-    setTimeout(() => setViewingPhoto(null), 300); // Clear after animation completes
-  };
-  
-  const handleDownloadPhoto = async () => {
-    if (!viewingPhoto) return;
-    
-    try {
-      // Get the image URL
-      const imageUrl = `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/event-photos/${viewingPhoto.filename}`;
-      
-      // Fetch the image
-      const response = await fetch(imageUrl);
-      const blob = await response.blob();
-      
-      // Create a download link
-      const downloadUrl = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = downloadUrl;
-      a.download = viewingPhoto.filename;
-      document.body.appendChild(a);
-      a.click();
-      
-      // Clean up
-      document.body.removeChild(a);
-      URL.revokeObjectURL(downloadUrl);
-    } catch (error) {
-      console.error("Error downloading photo:", error);
-    }
+    setTimeout(() => setViewingMedia(null), 300); // Clear after animation completes
   };
 
-  // Format date to a more readable format
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
-    return new Intl.DateTimeFormat('da-DK', {
+    return date.toLocaleDateString('da-DK', {
       day: 'numeric',
-      month: 'long',
-      year: 'numeric',
+      month: 'short',
       hour: '2-digit',
       minute: '2-digit'
-    }).format(date);
+    });
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-pink-50 via-white to-purple-50">
-      {/* Festive Scrolling Banner */}
-      <div className="bg-gradient-to-r from-purple-600 via-pink-600 to-blue-600 text-white py-3 overflow-hidden relative">
-        <div className="animate-scroll whitespace-nowrap">
-          <span className="inline-block px-8 text-lg font-bold">
-            🎉 BELLA'S KONFIRMATION 2025!! 🎊 BELLA'S KONFIRMATION 2025!! 🎈 BELLA'S KONFIRMATION 2025!! ✨ BELLA'S KONFIRMATION 2025!! 🎉 BELLA'S KONFIRMATION 2025!! 🎊 BELLA'S KONFIRMATION 2025!! 🎈 BELLA'S KONFIRMATION 2025!! ✨
-          </span>
+    <div className="min-h-screen bg-gray-50">
+      {/* Header */}
+      <div className="bg-white shadow-sm">
+        <div className="max-w-4xl mx-auto px-4 py-6">
+          <div className="text-center">
+            <h1 className="text-3xl font-bold text-gray-900 mb-2">Bella Konf</h1>
+            <p className="text-gray-600">Del dine billeder og videoer fra eventet</p>
+          </div>
         </div>
       </div>
 
-      <div className="container mx-auto px-4 py-6 md:py-10">
-        <div className="mb-8 md:mb-12 text-center">
-          <p className="text-lg md:text-xl text-gray-700 mb-6 leading-relaxed max-w-2xl mx-auto">
-            🌟 <strong>Fejr med os!</strong> 🌟
-            <br />
-            Del dine magiske øjeblikke fra Bella's konfirmation! 
-            Indtast dit navn og upload dine smukke billeder fra denne særlige dag! 📸
-          </p>
-          
-          <div className="flex flex-col gap-4 max-w-md mx-auto">
-            <input
-              type="text"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              placeholder="✨ Dit navn"
-              className="w-full px-4 py-3 border-2 border-purple-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all"
-            />
-            
-            <div className="flex flex-col sm:flex-row gap-3 justify-center items-center">
-              <button 
-                onClick={handleOpenModal}
-                disabled={!name.trim()}
-                className={`w-full sm:w-auto px-6 py-3 rounded-xl font-medium transition-all ${
-                  !name.trim() 
-                    ? 'bg-gray-300 cursor-not-allowed text-gray-500' 
-                    : 'bg-gradient-to-r from-purple-500 to-pink-500 text-white hover:from-purple-600 hover:to-pink-600 shadow-lg hover:shadow-xl transform hover:scale-105'
-                }`}
-              >
-                📸 Send billede
-              </button>
-              <Link 
-                href="/qr-code" 
-                className="w-full sm:w-auto px-6 py-3 border-2 border-purple-200 rounded-xl hover:bg-purple-50 text-center font-medium transition-all hover:border-purple-300"
-              >
-                📱 Se QR Kode
-              </Link>
+      {/* Main content */}
+      <div className="max-w-4xl mx-auto px-4 py-8">
+        {/* Name input and upload button */}
+        <div className="bg-white rounded-lg shadow-sm p-6 mb-8">
+          <div className="space-y-4">
+            <div>
+              <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-2">
+                Dit navn
+              </label>
+              <input
+                type="text"
+                id="name"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                placeholder="Indtast dit navn..."
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              />
             </div>
+            
+            <button
+              onClick={handleOpenModal}
+              disabled={!name.trim()}
+              className={`w-full py-3 px-4 rounded-lg font-medium ${
+                name.trim()
+                  ? 'bg-blue-500 hover:bg-blue-600 text-white'
+                  : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+              }`}
+            >
+              Upload billeder/videoer
+            </button>
           </div>
         </div>
 
-        {/* Image Gallery */}
-        {isLoading ? (
-          <div className="text-center py-12">
-            <div className="inline-block animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-500"></div>
-            <p className="mt-2 text-gray-500">Indlæser billeder...</p>
-          </div>
-        ) : photoSubmissions.length > 0 ? (
-          <div className="grid grid-cols-2 gap-3 md:gap-8 max-w-4xl mx-auto">
-            {photoSubmissions.map((submission) => (
-              <div 
-                key={submission.id} 
-                className="flex flex-col rounded-lg overflow-hidden shadow-md bg-white cursor-pointer transition-transform hover:scale-[1.02]"
-                onClick={() => handleViewPhoto(submission)}
-              >
-                <div className="relative w-full pb-[100%]">
-                  <Image
-                    src={`${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/event-photos/${submission.filename}`}
-                    alt={`Photo by ${submission.name}`}
-                    fill
-                    sizes="(max-width: 640px) 50vw, (max-width: 1200px) 50vw"
-                    className="object-contain bg-gray-50"
-                  />
-                </div>
-                <div className="p-2 md:p-3">
-                  <p className="font-medium text-sm md:text-base">Delt af: {submission.name}</p>
-                  <p className="text-xs text-gray-500 truncate">{formatDate(submission.submitted_at)}</p>
-                </div>
-              </div>
-            ))}
-          </div>
-        ) : (
-          <div className="text-center py-12">
-            <p className="text-gray-500">Ingen billeder uploadet endnu. Vær den første til at dele et billede!</p>
-          </div>
-        )}
+        {/* Media Gallery */}
+        <div className="bg-white rounded-lg shadow-sm p-6">
+          <h2 className="text-xl font-semibold mb-6">Delte billeder og videoer</h2>
+          
+          {isLoading ? (
+            <div className="text-center py-12">
+              <div className="inline-block animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-500"></div>
+              <p className="mt-2 text-gray-500">Indlæser indhold...</p>
+            </div>
+          ) : mediaSubmissions.length > 0 ? (
+            <div className="grid grid-cols-2 gap-3 md:gap-8 max-w-4xl mx-auto">
+              {mediaSubmissions.map((submission) => {
+                const isVideo = submission.file_type === 'video';
+                return (
+                  <div 
+                    key={submission.id} 
+                    className="flex flex-col rounded-lg overflow-hidden shadow-md bg-white cursor-pointer transition-transform hover:scale-[1.02]"
+                    onClick={() => handleViewMedia(submission)}
+                  >
+                    <div className="relative w-full pb-[100%]">
+                      {isVideo ? (
+                        <div className="absolute inset-0 bg-gray-100 flex items-center justify-center">
+                          <video
+                            src={`${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/event-photos/${submission.filename}`}
+                            className="w-full h-full object-contain"
+                            muted
+                            preload="metadata"
+                          />
+                          <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
+                            <div className="bg-black bg-opacity-60 rounded-full p-3">
+                              <svg className="w-8 h-8 text-white" fill="currentColor" viewBox="0 0 20 20">
+                                <path d="M8 5v10l8-5-8-5z"/>
+                              </svg>
+                            </div>
+                          </div>
+                        </div>
+                      ) : (
+                        <Image
+                          src={`${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/event-photos/${submission.filename}`}
+                          alt={`Media by ${submission.name}`}
+                          fill
+                          sizes="(max-width: 640px) 50vw, (max-width: 1200px) 50vw"
+                          className="object-contain bg-gray-50"
+                        />
+                      )}
+                    </div>
+                    <div className="p-2 md:p-3">
+                      <p className="font-medium text-sm md:text-base">
+                        Delt af: {submission.name} {isVideo && <span className="text-blue-500">📹</span>}
+                      </p>
+                      <p className="text-xs text-gray-500 truncate">{formatDate(submission.submitted_at)}</p>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          ) : (
+            <div className="text-center py-12">
+              <p className="text-gray-500">Intet indhold uploadet endnu. Vær den første til at dele!</p>
+            </div>
+          )}
+        </div>
 
         {/* Upload Modal */}
         <Modal
           isOpen={isModalOpen}
           onClose={handleCloseModal}
-          title="Upload billede"
+          title="Upload billeder/videoer"
         >
           <div className="py-2">
             <p className="mb-4 text-gray-600">
-              Hej {name}! Vælg et billede du vil dele med os.
+              Hej {name}! Vælg billeder eller videoer du vil dele med os.
             </p>
-            <ImageUpload name={name} onSuccess={handleUploadSuccess} />
+            <MediaUpload name={name} onSuccess={handleUploadSuccess} />
           </div>
         </Modal>
 
-        {/* View Photo Modal */}
-        {viewingPhoto && (
+        {/* View Media Modal */}
+        {viewingMedia && (
           <Modal
             isOpen={isViewModalOpen}
             onClose={handleCloseViewModal}
-            title={`Billede delt af ${viewingPhoto.name}`}
+            title={`${viewingMedia.file_type === 'video' ? 'Video' : 'Billede'} delt af ${viewingMedia.name}`}
           >
             <div className="py-2">
               <div className="flex items-center justify-center bg-gray-50 rounded-lg overflow-hidden" style={{ height: 'calc(min(70vh, 500px))' }}>
                 <div className="relative w-full h-full max-w-full max-h-full">
-                  <Image
-                    src={`${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/event-photos/${viewingPhoto.filename}`}
-                    alt={`Photo by ${viewingPhoto.name}`}
-                    fill
-                    priority
-                    sizes="(max-width: 1200px) 90vw"
-                    className="object-contain"
-                    style={{ objectPosition: 'center center' }}
-                  />
+                  {viewingMedia.file_type === 'video' ? (
+                    <video
+                      src={`${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/event-photos/${viewingMedia.filename}`}
+                      className="w-full h-full object-contain"
+                      controls
+                      autoPlay
+                      playsInline
+                      preload="metadata"
+                    />
+                  ) : (
+                    <Image
+                      src={`${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/event-photos/${viewingMedia.filename}`}
+                      alt={`Media by ${viewingMedia.name}`}
+                      fill
+                      priority
+                      sizes="(max-width: 1200px) 90vw"
+                      className="object-contain"
+                      style={{ objectPosition: 'center center' }}
+                    />
+                  )}
                 </div>
               </div>
               
               <div className="mt-4 text-center">
-                <p className="text-sm text-gray-500 mb-3">
-                  Uploadet {formatDate(viewingPhoto.submitted_at)}
+                <p className="text-sm text-gray-600">
+                  Delt af <span className="font-medium">{viewingMedia.name}</span> • {formatDate(viewingMedia.submitted_at)}
                 </p>
-                
-                <button
-                  onClick={handleDownloadPhoto}
-                  className="inline-flex items-center gap-2 px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600"
-                >
-                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-                    <polyline points="7 10 12 15 17 10"></polyline>
-                    <line x1="12" y1="15" x2="12" y2="3"></line>
-                  </svg>
-                  Download billede
-                </button>
               </div>
             </div>
           </Modal>
