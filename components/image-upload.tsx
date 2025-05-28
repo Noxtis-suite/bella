@@ -104,7 +104,8 @@ export default function MediaUpload({ name, onSuccess }: MediaUploadProps) {
           .insert({
             name: name,
             filename: fileName,
-            file_type: fileType
+            file_type: fileType,
+            submitted_at: new Date().toISOString()
           });
         
         if (dbError) {
