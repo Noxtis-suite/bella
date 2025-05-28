@@ -143,11 +143,11 @@ export default function MediaUpload({ name, onSuccess }: MediaUploadProps) {
           <button
             type="button"
             onClick={() => fileInputRef.current?.click()}
-            className="w-full py-4 px-2 border-2 border-dashed border-gray-300 rounded-lg text-center hover:bg-gray-50 focus:outline-none"
+            className="w-full py-4 px-2 border-2 border-dashed border-purple-300 rounded-lg text-center hover:bg-purple-50 focus:outline-none transition-all"
           >
             <div className="flex flex-col items-center">
               <svg 
-                className="h-10 w-10 text-gray-400 mb-2" 
+                className="h-10 w-10 text-purple-400 mb-2" 
                 stroke="currentColor" 
                 fill="none" 
                 viewBox="0 0 24 24"
@@ -159,17 +159,17 @@ export default function MediaUpload({ name, onSuccess }: MediaUploadProps) {
                   d="M12 4v16m8-8H4" 
                 />
               </svg>
-              <span className="text-sm font-medium text-blue-500">Vælg billeder eller videoer</span>
-              <span className="text-xs text-gray-500 mt-1">Billeder: PNG, JPG, GIF op til 5MB<br/>Videoer: MP4, MOV, AVI op til 50MB</span>
+              <span className="text-sm font-medium text-purple-600">✨ Vælg billeder eller videoer</span>
+              <span className="text-xs text-purple-500 mt-1">Billeder: PNG, JPG, GIF op til 5MB<br/>Videoer: MP4, MOV, AVI op til 50MB</span>
             </div>
           </button>
         ) : (
           <button
             type="button"
             onClick={() => fileInputRef.current?.click()}
-            className="w-full py-2 px-3 border border-gray-300 rounded-lg text-center hover:bg-gray-50 focus:outline-none mb-3"
+            className="w-full py-2 px-3 border border-purple-300 rounded-lg text-center hover:bg-purple-50 focus:outline-none mb-3 transition-all"
           >
-            <span className="text-sm font-medium text-blue-500">Tilføj flere filer</span>
+            <span className="text-sm font-medium text-purple-600">✨ Tilføj flere filer</span>
           </button>
         )}
         
@@ -186,14 +186,14 @@ export default function MediaUpload({ name, onSuccess }: MediaUploadProps) {
       
       {previews.length > 0 && (
         <div className="mb-4">
-          <p className="text-sm text-gray-600 mb-2">
-            {selectedFiles.length} {selectedFiles.length === 1 ? 'fil' : 'filer'} valgt
+          <p className="text-sm text-purple-700 mb-2">
+            {selectedFiles.length} {selectedFiles.length === 1 ? 'magisk fil' : 'magiske filer'} valgt ✨
           </p>
           
           <div className="grid grid-cols-3 gap-2">
             {previews.map((preview, index) => (
               <div key={index} className="relative">
-                <div className="bg-gray-50 rounded overflow-hidden" style={{ paddingBottom: '100%', position: 'relative' }}>
+                <div className="bg-gradient-to-br from-purple-50 to-pink-50 rounded overflow-hidden border-2 border-purple-200" style={{ paddingBottom: '100%', position: 'relative' }}>
                   <div className="absolute inset-0 flex items-center justify-center">
                     {preview.type === 'video' ? (
                       <video
@@ -212,7 +212,7 @@ export default function MediaUpload({ name, onSuccess }: MediaUploadProps) {
                   </div>
                   {preview.type === 'video' && (
                     <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
-                      <div className="bg-black bg-opacity-50 rounded-full p-2">
+                      <div className="bg-gradient-to-r from-purple-500 to-pink-500 rounded-full p-2 shadow-lg">
                         <svg className="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 20 20">
                           <path d="M8 5v10l8-5-8-5z"/>
                         </svg>
@@ -223,7 +223,7 @@ export default function MediaUpload({ name, onSuccess }: MediaUploadProps) {
                 <button
                   type="button"
                   onClick={() => removeFile(index)}
-                  className="absolute top-1 right-1 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs hover:bg-red-600"
+                  className="absolute top-1 right-1 bg-pink-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs hover:bg-pink-600 transition-all"
                 >
                   ×
                 </button>
@@ -241,13 +241,13 @@ export default function MediaUpload({ name, onSuccess }: MediaUploadProps) {
       {/* Upload progress */}
       {isUploading && uploadProgress > 0 && (
         <div className="mb-3">
-          <div className="bg-gray-200 rounded-full h-2.5">
+          <div className="bg-purple-100 rounded-full h-2.5">
             <div 
-              className="bg-blue-600 h-2.5 rounded-full" 
+              className="bg-gradient-to-r from-purple-500 to-pink-500 h-2.5 rounded-full transition-all" 
               style={{ width: `${uploadProgress}%` }}
             ></div>
           </div>
-          <p className="mt-1 text-xs text-gray-500 text-right">{uploadProgress}%</p>
+          <p className="mt-1 text-xs text-purple-600 text-right">{uploadProgress}% ✨</p>
         </div>
       )}
       
@@ -257,13 +257,13 @@ export default function MediaUpload({ name, onSuccess }: MediaUploadProps) {
           type="button"
           onClick={handleUpload}
           disabled={isUploading}
-          className={`w-full py-3 px-4 rounded-lg ${
+          className={`w-full py-3 px-4 rounded-lg font-medium transition-all ${
             isUploading
-              ? 'bg-gray-300 cursor-not-allowed'
-              : 'bg-blue-500 hover:bg-blue-600 text-white'
+              ? 'bg-gray-300 cursor-not-allowed text-gray-500'
+              : 'bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white shadow-lg hover:shadow-xl transform hover:scale-105'
           }`}
         >
-          {isUploading ? 'Uploader...' : `Upload ${selectedFiles.length} ${selectedFiles.length === 1 ? 'fil' : 'filer'}`}
+          {isUploading ? '🎉 Uploader magiske øjeblikke...' : `✨ Upload ${selectedFiles.length} ${selectedFiles.length === 1 ? 'magisk fil' : 'magiske filer'}`}
         </button>
       )}
     </div>
