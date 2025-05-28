@@ -133,6 +133,7 @@ export default function Home() {
             🌟 <strong>Fejr med os!</strong> 🌟
             <br />
             Del dine magiske øjeblikke fra Bella's konfirmation! 
+            <br />
             Indtast dit navn og upload dine smukke billeder og videoer fra denne særlige dag! 📸🎬
           </p>
           
